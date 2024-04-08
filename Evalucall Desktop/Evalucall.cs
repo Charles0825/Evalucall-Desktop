@@ -91,7 +91,9 @@ namespace Evalucall_Desktop
             if (email == validEmail && password == validPassword)
             {
                 DisplayNotification("Login successful!", NotificationType.Success);
-  
+                EvalucallRecording evalucallRecording = new EvalucallRecording();
+                evalucallRecording.Show();
+                this.Hide();
             }
             else
             {
@@ -216,6 +218,22 @@ namespace Evalucall_Desktop
             forgotPasswordForm.StartPosition = FormStartPosition.CenterParent;
             forgotPasswordForm.ShowDialog(this);
             this.Opacity = 1.0;
+        }
+
+        private void txtPassword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                loginBtn.PerformClick();
+            }
+        }
+
+        private void txtEmail_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                loginBtn.PerformClick();
+            }
         }
 
         public enum NotificationType
