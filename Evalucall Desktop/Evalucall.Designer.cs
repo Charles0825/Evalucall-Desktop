@@ -44,7 +44,6 @@ namespace Evalucall_Desktop
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.minimizeBtn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.closeBtn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.topbar)).BeginInit();
@@ -52,7 +51,6 @@ namespace Evalucall_Desktop
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // minimizeBtn
@@ -61,7 +59,7 @@ namespace Evalucall_Desktop
             this.minimizeBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.minimizeBtn.Cursor = System.Windows.Forms.Cursors.Hand;
             this.minimizeBtn.Image = ((System.Drawing.Image)(resources.GetObject("minimizeBtn.Image")));
-            this.minimizeBtn.Location = new System.Drawing.Point(925, 3);
+            this.minimizeBtn.Location = new System.Drawing.Point(425, 3);
             this.minimizeBtn.Name = "minimizeBtn";
             this.minimizeBtn.Size = new System.Drawing.Size(24, 24);
             this.minimizeBtn.TabIndex = 0;
@@ -74,7 +72,7 @@ namespace Evalucall_Desktop
             this.closeBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.closeBtn.Cursor = System.Windows.Forms.Cursors.Hand;
             this.closeBtn.Image = ((System.Drawing.Image)(resources.GetObject("closeBtn.Image")));
-            this.closeBtn.Location = new System.Drawing.Point(960, 3);
+            this.closeBtn.Location = new System.Drawing.Point(460, 3);
             this.closeBtn.Name = "closeBtn";
             this.closeBtn.Size = new System.Drawing.Size(24, 24);
             this.closeBtn.TabIndex = 0;
@@ -88,7 +86,7 @@ namespace Evalucall_Desktop
             this.topbar.Image = ((System.Drawing.Image)(resources.GetObject("topbar.Image")));
             this.topbar.Location = new System.Drawing.Point(0, 0);
             this.topbar.Name = "topbar";
-            this.topbar.Size = new System.Drawing.Size(1000, 31);
+            this.topbar.Size = new System.Drawing.Size(500, 31);
             this.topbar.TabIndex = 1;
             this.topbar.TabStop = false;
             this.topbar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.topbar_MouseDown);
@@ -107,7 +105,7 @@ namespace Evalucall_Desktop
             this.panel1.Controls.Add(this.panel2);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.pictureBox1);
-            this.panel1.Location = new System.Drawing.Point(500, 0);
+            this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.MaximumSize = new System.Drawing.Size(500, 600);
             this.panel1.MinimumSize = new System.Drawing.Size(500, 600);
             this.panel1.Name = "panel1";
@@ -252,28 +250,16 @@ namespace Evalucall_Desktop
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox2.MaximumSize = new System.Drawing.Size(500, 600);
-            this.pictureBox2.MinimumSize = new System.Drawing.Size(500, 600);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(500, 600);
-            this.pictureBox2.TabIndex = 3;
-            this.pictureBox2.TabStop = false;
-            // 
             // Evalucall
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.ClientSize = new System.Drawing.Size(1000, 600);
+            this.ClientSize = new System.Drawing.Size(500, 600);
             this.Controls.Add(this.closeBtn);
             this.Controls.Add(this.minimizeBtn);
             this.Controls.Add(this.topbar);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.pictureBox2);
             this.Font = new System.Drawing.Font("Poppins", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -291,7 +277,6 @@ namespace Evalucall_Desktop
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -311,7 +296,6 @@ namespace Evalucall_Desktop
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button loginBtn;
-        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label txtMessage;
     }
 }

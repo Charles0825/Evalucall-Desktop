@@ -2,6 +2,8 @@
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.Drawing;
+using BCrypt.Net;
+using MySql.Data.MySqlClient;
 
 namespace Evalucall_Desktop
 {
@@ -79,26 +81,83 @@ namespace Evalucall_Desktop
                 return;
             }
 
-            if (password.Length < 6) 
+            string connectionString = "Server=127.0.0.1;Database=evalucall-database;Uid=root;Pwd=;";
+
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                DisplayNotification("Password must be at least 6 characters long.", NotificationType.Error);
-                return;
+                try
+                {
+                    connection.Open();
+
+                    string query = "SELECT password FROM agents WHERE email = @Email";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@Email", email);
+
+                    string hashedPasswordFromDB = cmd.ExecuteScalar() as string;
+
+                    if (hashedPasswordFromDB != null && BCrypt.Net.BCrypt.Verify(password, hashedPasswordFromDB))
+                    {
+                        DisplayNotification("Login successful!", NotificationType.Success);
+                        // Retrieve the user ID from the database or any other source
+                        int userId = RetrieveUserIdFromDatabase(email);
+                        // Pass the user ID to EvalucallRecording form
+                        EvalucallRecording evalucallRecording = new EvalucallRecording(userId);
+                        evalucallRecording.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        DisplayNotification("Invalid email or password.", NotificationType.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DisplayNotification("Error: " + ex.Message, NotificationType.Error);
+                }
+            }
+        }
+
+        private int RetrieveUserIdFromDatabase(string email)
+        {
+            int userId = -1; // Default value if user ID is not found or an error occurs
+
+            string connectionString = "Server=127.0.0.1;Database=evalucall-database;Uid=root;Pwd=;";
+
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    string query = "SELECT id FROM agents WHERE email = @Email";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@Email", email);
+
+                    // ExecuteScalar returns the first column of the first row in the result set
+                    // If no rows are found, it returns null
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        userId = Convert.ToInt32(result); // Convert the result to integer
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions (e.g., log, display error message)
+                    Console.WriteLine("Error retrieving user ID: " + ex.Message);
+                }
             }
 
-            string validEmail = "sample@gmail.com";
-            string validPassword = "aadmin";
+            return userId;
+        }
 
-            if (email == validEmail && password == validPassword)
-            {
-                DisplayNotification("Login successful!", NotificationType.Success);
-                EvalucallRecording evalucallRecording = new EvalucallRecording();
-                evalucallRecording.Show();
-                this.Hide();
-            }
-            else
-            {
-                DisplayNotification("Invalid email or password.", NotificationType.Error);
-            }
+
+        private string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
         private bool IsValidEmail(string email)

@@ -89,7 +89,7 @@ namespace Evalucall_Desktop
             this.txtEmail.MaximumSize = new System.Drawing.Size(274, 24);
             this.txtEmail.MinimumSize = new System.Drawing.Size(274, 24);
             this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(274, 24);
+            this.txtEmail.Size = new System.Drawing.Size(274, 23);
             this.txtEmail.TabIndex = 5;
             this.txtEmail.TabStop = false;
             // 
