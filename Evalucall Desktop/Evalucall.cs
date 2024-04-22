@@ -89,7 +89,7 @@ namespace Evalucall_Desktop
                 {
                     connection.Open();
 
-                    string query = "SELECT password FROM agents WHERE email = @Email";
+                    string query = "SELECT password FROM agent_accounts WHERE email = @Email";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@Email", email);

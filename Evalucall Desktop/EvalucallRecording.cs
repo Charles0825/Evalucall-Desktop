@@ -97,7 +97,7 @@ namespace Evalucall_Desktop
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync("http://127.0.0.1:5000/ping");
+                    HttpResponseMessage response = await client.GetAsync("http://127.0.0.1:5000/api_status");
                     return response.IsSuccessStatusCode;
                 }
             }
@@ -135,7 +135,7 @@ namespace Evalucall_Desktop
         }
 
 
-        private async Task UploadAudioFile(string filePath)
+        private async Task UploadAudioFile(string filePath, string id, string name, string email, TimeSpan duration, DateTime dateTime)
         {
             try
             {
@@ -143,30 +143,40 @@ namespace Evalucall_Desktop
                 using (var content = new MultipartFormDataContent())
                 using (var fileStream = new FileStream(filePath, FileMode.Open))
                 {
+                    // Add the audio file to the multipart form data
                     content.Add(new StreamContent(fileStream), "audio", Path.GetFileName(filePath));
 
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    
-                    HttpResponseMessage response = await client.PostAsync("http://127.0.0.1:5000/upload", content);
+                    // Add additional fields to the multipart form data
+                    content.Add(new StringContent(id), "id");
+                    content.Add(new StringContent(name), "name");
+                    content.Add(new StringContent(email), "email");
+
+                    // Add duration to the multipart form data
+                    content.Add(new StringContent(duration.ToString()), "duration");
+
+                    // Add date and time to the multipart form data
+                    content.Add(new StringContent(dateTime.ToString()), "datetime");
+
+                    // Send the POST request
+                    HttpResponseMessage response = await client.PostAsync("http://127.0.0.1:5000/process_audio", content);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        //MessageBox.Show("File uploaded successfully.");
                         RecordNotification.Text = "File uploaded successfully.";
                     }
                     else
                     {
-                        //MessageBox.Show("File upload failed. Server returned " + response.StatusCode);
-                        RecordNotification.Text = "File upload failed. Server returned";
+                        RecordNotification.Text = "File upload failed. Server returned " + response.StatusCode;
                     }
                 }
             }
             catch (Exception ex)
             {
-                //MessageBox.Show("Error: " + ex.Message);
-                RecordNotification.Text = "Error:" + ex.Message;
+                RecordNotification.Text = "Error: " + ex.Message;
             }
         }
+
+
 
         // Modify your StopRecording method to call the upload method after stopping recording
         private async void StopRecording()
@@ -179,8 +189,13 @@ namespace Evalucall_Desktop
             waveFile.Close();
             waveFile.Dispose();
             Console.WriteLine(filePath);
-            await UploadAudioFile(filePath);
+            await UploadAudioFile(filePath, "1", "Charles Lim", "Charles@gmail.com", duration, DateTime.Now);
             
+        }
+
+        private void EvalucallRecording_Load(object sender, EventArgs e)
+        {
+
         }
 
         private void WaveSource_DataAvailable(object sender, WaveInEventArgs e)

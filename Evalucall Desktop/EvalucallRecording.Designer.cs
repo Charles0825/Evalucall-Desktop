@@ -132,8 +132,9 @@ namespace Evalucall_Desktop
             this.MaximumSize = new System.Drawing.Size(500, 600);
             this.MinimumSize = new System.Drawing.Size(500, 600);
             this.Name = "EvalucallRecording";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "EvalucallRecording";
+            this.Load += new System.EventHandler(this.EvalucallRecording_Load);
             ((System.ComponentModel.ISupportInitialize)(this.closeBtn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.minimizeBtn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.topbar)).EndInit();

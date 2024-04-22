@@ -172,7 +172,7 @@ private void emailmeBtn_Click(object sender, EventArgs e)
             {
                 connection.Open();
 
-                string query = "UPDATE agents SET ResetToken = @ResetToken, TokenExpiry = @TokenExpiry WHERE Email = @Email";
+                string query = "UPDATE agent_accounts SET resetPasswordToken = @ResetToken, resetPasswordExpires = @TokenExpiry WHERE Email = @Email";
                 using (MySqlCommand cmd = new MySqlCommand(query, connection))
                 {
                     cmd.Parameters.AddWithValue("@ResetToken", token);
@@ -269,7 +269,7 @@ private void emailmeBtn_Click(object sender, EventArgs e)
                 {
                     connection.Open();
 
-                    string query = "SELECT COUNT(*) FROM agents WHERE Email = @Email";
+                    string query = "SELECT COUNT(*) FROM agent_accounts WHERE Email = @Email";
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@Email", email);
