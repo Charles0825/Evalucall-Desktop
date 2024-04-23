@@ -134,7 +134,6 @@ namespace Evalucall_Desktop
             this.Name = "EvalucallRecording";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "EvalucallRecording";
-            this.Load += new System.EventHandler(this.EvalucallRecording_Load);
             ((System.ComponentModel.ISupportInitialize)(this.closeBtn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.minimizeBtn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.topbar)).EndInit();

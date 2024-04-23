@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 using System.Drawing;
-using BCrypt.Net;
-using MySql.Data.MySqlClient;
+using System.Collections.Generic;
 
 namespace Evalucall_Desktop
 {
@@ -13,11 +11,19 @@ namespace Evalucall_Desktop
         private int xOffset, yOffset;
         private const string EmailPlaceholder = "Enter your email";
         private const string PasswordPlaceholder = "Enter your password";
+        private NotificationManager notificationManager;
+        private DatabaseManager dbManager;
+        private string connectionString;
 
         public Evalucall()
         {
             InitializeComponent();
             InitializeLoginForm();
+            var appSettings = new AppSettings();
+            connectionString = appSettings.GetConnectionString();
+
+            notificationManager = new NotificationManager(txtMessage);
+            dbManager = new DatabaseManager(connectionString);
         }
 
         private void closeBtn_Click(object sender, EventArgs e)
@@ -55,149 +61,67 @@ namespace Evalucall_Desktop
             isDragging = false;
         }
 
-
-
-        // START OF LOGIN FUNCTIONS
         private void loginBtn_Click(object sender, EventArgs e)
         {
-            string email = txtEmail.Text.Trim();
-            string password = txtPassword.Text;
-
-            if (email == EmailPlaceholder)
+            try
             {
-                DisplayNotification("Email field cannot be empty.", NotificationType.Error);
-                return;
-            }
+                string email = txtEmail.Text.Trim();
+                string password = txtPassword.Text;
 
-            if (!IsValidEmail(email))
-            {
-                DisplayNotification("Please enter a valid email address.", NotificationType.Error);
-                return;
-            }
-
-            if (password == PasswordPlaceholder)
-            {
-                DisplayNotification("Password field cannot be empty.", NotificationType.Error);
-                return;
-            }
-
-            string connectionString = "Server=127.0.0.1;Database=evalucall-database;Uid=root;Pwd=;";
-
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
-            {
-                try
+                if (email == EmailPlaceholder)
                 {
-                    connection.Open();
+                    notificationManager.DisplayNotification("Email field cannot be empty", NotificationManager.NType.Error);
+                    return;
+                }
 
-                    string query = "SELECT password FROM agent_accounts WHERE email = @Email";
+                if (!Essentials.IsValidEmail(email))
+                {
+                    notificationManager.DisplayNotification("Please enter a valid email address.", NotificationManager.NType.Error);
+                    return;
+                }
 
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@Email", email);
+                if (password == PasswordPlaceholder)
+                {
+                    notificationManager.DisplayNotification("Password field cannot be empty.", NotificationManager.NType.Error);
+                    return;
+                }
 
-                    string hashedPasswordFromDB = cmd.ExecuteScalar() as string;
+                string hashedPasswordFromDB = dbManager.RetrieveHashedPassword(email);
 
-                    if (hashedPasswordFromDB != null && BCrypt.Net.BCrypt.Verify(password, hashedPasswordFromDB))
+                if (hashedPasswordFromDB != null && BCrypt.Net.BCrypt.Verify(password, hashedPasswordFromDB))
+                {
+                    notificationManager.DisplayNotification("Login successful!", NotificationManager.NType.Success);
+                    List<(int id, string firstName, string lastName, string email)> userDetailsList = dbManager.RetrieveUserDetailsFromDatabase(email);
+
+                    if (userDetailsList.Count > 0)
                     {
-                        DisplayNotification("Login successful!", NotificationType.Success);
-                        // Retrieve the user ID from the database or any other source
-                        int userId = RetrieveUserIdFromDatabase(email);
-                        // Pass the user ID to EvalucallRecording form
-                        EvalucallRecording evalucallRecording = new EvalucallRecording(userId);
+                        var userDetails = userDetailsList[0];
+
+                        EvalucallRecording evalucallRecording = new EvalucallRecording(userDetails.id, userDetails.firstName + ' ' + userDetails.lastName, userDetails.email);
                         evalucallRecording.Show();
                         this.Hide();
                     }
                     else
                     {
-                        DisplayNotification("Invalid email or password.", NotificationType.Error);
+                        Console.WriteLine("No user found with the specified email.");
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    DisplayNotification("Error: " + ex.Message, NotificationType.Error);
+                    notificationManager.DisplayNotification("Invalid email or password.", NotificationManager.NType.Error);
                 }
             }
-        }
-
-        private int RetrieveUserIdFromDatabase(string email)
-        {
-            int userId = -1; // Default value if user ID is not found or an error occurs
-
-            string connectionString = "Server=127.0.0.1;Database=evalucall-database;Uid=root;Pwd=;";
-
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            catch (Exception ex)
             {
-                try
-                {
-                    connection.Open();
-
-                    string query = "SELECT id FROM agents WHERE email = @Email";
-
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@Email", email);
-
-                    // ExecuteScalar returns the first column of the first row in the result set
-                    // If no rows are found, it returns null
-                    object result = cmd.ExecuteScalar();
-
-                    if (result != null && result != DBNull.Value)
-                    {
-                        userId = Convert.ToInt32(result); // Convert the result to integer
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Handle exceptions (e.g., log, display error message)
-                    Console.WriteLine("Error retrieving user ID: " + ex.Message);
-                }
+                notificationManager.DisplayNotification("An error occurred: " + ex.Message , NotificationManager.NType.Error);
             }
-
-            return userId;
         }
+
 
 
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return false;
-
-            try
-            {
-                email = Regex.Replace(email, @"(@)(.+)$", DomainMapper,
-                                      RegexOptions.None, TimeSpan.FromMilliseconds(200));
-
-                string DomainMapper(Match match)
-                {
-                    var idn = new System.Globalization.IdnMapping();
-
-                    string domainName = idn.GetAscii(match.Groups[2].Value);
-
-                    return match.Groups[1].Value + domainName;
-                }
-            }
-            catch (RegexMatchTimeoutException e)
-            {
-                return false;
-            }
-            catch (ArgumentException e)
-            {
-                return false;
-            }
-
-            try
-            {
-                return Regex.IsMatch(email,
-                    @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-                    RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
-            }
-            catch (RegexMatchTimeoutException)
-            {
-                return false;
-            }
         }
 
         private void InitializeLoginForm()
@@ -251,24 +175,6 @@ namespace Evalucall_Desktop
             }
         }
 
-        private void DisplayNotification(string message, NotificationType type)
-        {
-            txtMessage.Text = message;
-            txtMessage.TextAlign = ContentAlignment.MiddleCenter;
-
-            switch (type)
-            {
-                case NotificationType.Error:
-                    txtMessage.ForeColor = Color.Red;
-                    break;
-                case NotificationType.Success:
-                    txtMessage.ForeColor = Color.Green;
-                    break;
-                default:
-                    txtMessage.ForeColor = SystemColors.ControlText;
-                    break;
-            }
-        }
 
         private void forgotBtn_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
@@ -294,14 +200,6 @@ namespace Evalucall_Desktop
                 loginBtn.PerformClick();
             }
         }
-
-        public enum NotificationType
-        {
-            Error,
-            Success
-        }
-
-        // DisplayNotification("Error: Something went wrong.", NotificationType.Error);
 
 
     }

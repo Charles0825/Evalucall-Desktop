@@ -167,6 +167,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppSettings.cs" />
+    <Compile Include="DatabaseManager.cs" />
+    <Compile Include="Essentials.cs" />
     <Compile Include="Evalucall.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -191,6 +194,7 @@
     <Compile Include="ForgotPasswordForm2.Designer.cs">
       <DependentUpon>ForgotPasswordForm2.cs</DependentUpon>
     </Compile>
+    <Compile Include="NotificationManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Evalucall.resx">
@@ -215,6 +219,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <None Include="Evalucall Desktop_TemporaryKey.pfx" />
+    <None Include="appsettings.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

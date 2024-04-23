@@ -18,15 +18,28 @@ namespace Evalucall_Desktop
         private WaveInEvent waveSource;
         private WaveFileWriter waveFile;
         private int userId;
+        private string name;
+        private string email;
         private string filePath;
+        private NotificationManager notificationManager;
+        private string processAudioUrl;
+        private string apiStatusUrl;
 
-        public EvalucallRecording(int userId)
+        public EvalucallRecording(int userId, string name, string email)
         {
             InitializeComponent();
             timer = new Timer();
             timer.Interval = 1000;
             timer.Tick += Timer_Tick;
             this.userId = userId;
+            this.name = name;
+            this.email = email;
+            notificationManager = new NotificationManager(RecordNotification);
+
+            var appSettings = new AppSettings();
+            processAudioUrl = appSettings.ProcessAudioURL();
+            apiStatusUrl = appSettings.ApiStatusURL();
+            Console.WriteLine("Connection string: " + processAudioUrl);
         }
 
         private void closeBtn_Click(object sender, EventArgs e)
@@ -72,24 +85,40 @@ namespace Evalucall_Desktop
 
         private async void RecordBtn_Click(object sender, EventArgs e)
         {
-            if (!isRecording)
+            try
             {
-                bool isApiOnline = await CheckApiOnline();
-                if (isApiOnline)
+                // Disable the RecordBtn to prevent spamming
+                RecordBtn.Enabled = false;
+
+                if (!isRecording)
                 {
-                    StartRecording();
+                    notificationManager.DisplayNotification("Checking server..", NotificationManager.NType.Default);
+                    bool isApiOnline = await CheckApiOnline();
+                    if (isApiOnline)
+                    {
+                        StartRecording();
+                    }
+                    else
+                    {
+                        notificationManager.DisplayNotification("API is not online. Please try again later.", NotificationManager.NType.Error);
+                    }
                 }
                 else
                 {
-                    //MessageBox.Show("API is not online. Please try again later.");
-                    RecordNotification.Text = "API is not online. Please try again later.";
+                    StopRecording();
                 }
             }
-            else
+            catch (Exception ex)
             {
-                StopRecording();
+                notificationManager.DisplayNotification("An error occurred: " + ex.Message, NotificationManager.NType.Error);
+            }
+            finally
+            {
+                // Enable the RecordBtn after operation completes
+                RecordBtn.Enabled = true;
             }
         }
+
 
         private async Task<bool> CheckApiOnline()
         {
@@ -97,12 +126,13 @@ namespace Evalucall_Desktop
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync("http://127.0.0.1:5000/api_status");
+                    HttpResponseMessage response = await client.GetAsync(apiStatusUrl);
                     return response.IsSuccessStatusCode;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                notificationManager.DisplayNotification("An error occurred while checking API status: " + ex.Message, NotificationManager.NType.Error);
                 return false;
             }
         }
@@ -114,7 +144,7 @@ namespace Evalucall_Desktop
 
             isRecording = true;
             timer.Start();
-            RecordNotification.Text = "Recording...";
+            RecordNotification.Text = "Recording . . .";
 
             waveSource = new WaveInEvent();
             waveSource.WaveFormat = new WaveFormat(44100, 1);
@@ -135,7 +165,7 @@ namespace Evalucall_Desktop
         }
 
 
-        private async Task UploadAudioFile(string filePath, string id, string name, string email, TimeSpan duration, DateTime dateTime)
+        private async Task UploadAudioFile(string filePath, int id, string name, string email, TimeSpan duration, DateTime dateTime)
         {
             try
             {
@@ -143,59 +173,51 @@ namespace Evalucall_Desktop
                 using (var content = new MultipartFormDataContent())
                 using (var fileStream = new FileStream(filePath, FileMode.Open))
                 {
-                    // Add the audio file to the multipart form data
                     content.Add(new StreamContent(fileStream), "audio", Path.GetFileName(filePath));
-
-                    // Add additional fields to the multipart form data
-                    content.Add(new StringContent(id), "id");
+                    content.Add(new StringContent(id.ToString()), "id");
                     content.Add(new StringContent(name), "name");
                     content.Add(new StringContent(email), "email");
-
-                    // Add duration to the multipart form data
                     content.Add(new StringContent(duration.ToString()), "duration");
-
-                    // Add date and time to the multipart form data
                     content.Add(new StringContent(dateTime.ToString()), "datetime");
 
-                    // Send the POST request
-                    HttpResponseMessage response = await client.PostAsync("http://127.0.0.1:5000/process_audio", content);
+                    HttpResponseMessage response = await client.PostAsync(processAudioUrl, content);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        RecordNotification.Text = "File uploaded successfully.";
+                        notificationManager.DisplayNotification("File uploaded successfully.", NotificationManager.NType.Success);
+
                     }
                     else
                     {
-                        RecordNotification.Text = "File upload failed. Server returned " + response.StatusCode;
+                        notificationManager.DisplayNotification("File upload failed. Server returned " + response.StatusCode, NotificationManager.NType.Error);
                     }
                 }
             }
             catch (Exception ex)
             {
-                RecordNotification.Text = "Error: " + ex.Message;
+                notificationManager.DisplayNotification("Error: " + ex.Message, NotificationManager.NType.Error);
+
             }
         }
 
-
-
-        // Modify your StopRecording method to call the upload method after stopping recording
         private async void StopRecording()
         {
-            isRecording = false;
-            timer.Stop();
-            RecordNotification.Text = "";
-            waveSource.StopRecording();
-            waveSource.Dispose();
-            waveFile.Close();
-            waveFile.Dispose();
-            Console.WriteLine(filePath);
-            await UploadAudioFile(filePath, "1", "Charles Lim", "Charles@gmail.com", duration, DateTime.Now);
-            
-        }
-
-        private void EvalucallRecording_Load(object sender, EventArgs e)
-        {
-
+            try
+            {
+                isRecording = false;
+                timer.Stop();
+                RecordNotification.Text = "";
+                waveSource.StopRecording();
+                waveSource.Dispose();
+                waveFile.Close();
+                waveFile.Dispose();
+                Console.WriteLine(filePath);
+                await UploadAudioFile(filePath, userId, name, email, duration, DateTime.Now);
+            }
+            catch (Exception ex)
+            {
+                notificationManager.DisplayNotification("An error occurred while stopping recording: " + ex.Message, NotificationManager.NType.Error);
+            }
         }
 
         private void WaveSource_DataAvailable(object sender, WaveInEventArgs e)
