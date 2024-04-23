@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -212,11 +213,57 @@ namespace Evalucall_Desktop
                 waveFile.Close();
                 waveFile.Dispose();
                 Console.WriteLine(filePath);
+
+                if (GetTotalRecordingsCount() >= 20)
+                {
+                    DeleteOldestRecording();
+                }
+
                 await UploadAudioFile(filePath, userId, name, email, duration, DateTime.Now);
             }
             catch (Exception ex)
             {
                 notificationManager.DisplayNotification("An error occurred while stopping recording: " + ex.Message, NotificationManager.NType.Error);
+            }
+        }
+
+        private int GetTotalRecordingsCount()
+        {
+            try
+            {
+                string userDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EvalucallDesktop");
+                string outputDirectory = Path.Combine(userDirectory, "Recordings");
+
+                string[] files = Directory.GetFiles(outputDirectory);
+
+                return files.Length;
+            }
+            catch (Exception ex)
+            {
+                notificationManager.DisplayNotification("An error occurred while getting total recordings count: " + ex.Message, NotificationManager.NType.Error);
+                return 0;
+            }
+        }
+
+        private void DeleteOldestRecording()
+        {
+            try
+            {
+                string userDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EvalucallDesktop");
+                string outputDirectory = Path.Combine(userDirectory, "Recordings");
+
+                string[] files = Directory.GetFiles(outputDirectory);
+
+                string oldestRecording = files.OrderBy(f => new FileInfo(f).CreationTime).FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(oldestRecording))
+                {
+                    File.Delete(oldestRecording);
+                }
+            }
+            catch (Exception ex)
+            {
+                notificationManager.DisplayNotification("An error occurred while deleting the oldest recording: " + ex.Message, NotificationManager.NType.Error);
             }
         }
 
