@@ -129,6 +129,7 @@ namespace Evalucall_Desktop
             this.Controls.Add(this.minimizeBtn);
             this.Controls.Add(this.topbar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(500, 600);
             this.MinimumSize = new System.Drawing.Size(500, 600);
             this.Name = "EvalucallRecording";
