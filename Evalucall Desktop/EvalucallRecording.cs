@@ -44,7 +44,7 @@ namespace Evalucall_Desktop
 
         private void closeBtn_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+             Application.Exit();
         }
 
         private void minimizeBtn_Click(object sender, EventArgs e)
