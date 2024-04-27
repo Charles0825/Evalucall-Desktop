@@ -35,13 +35,27 @@ namespace Evalucall_Desktop
             this.name = name;
             this.email = email;
             notificationManager = new NotificationManager(RecordNotification);
-
-            var appSettings = new AppSettings();
-            processAudioUrl = appSettings.ProcessAudioURL();
-            apiStatusUrl = appSettings.ApiStatusURL();
+            Task task = InitializeConfiguration();
+            //var appSettings = new AppSettings();
+            //processAudioUrl = appSettings.ProcessAudioURL();
+            //apiStatusUrl = appSettings.ApiStatusURL();
             Console.WriteLine("Connection string: " + processAudioUrl);
         }
 
+        public async Task InitializeConfiguration()
+        {
+            try
+            {
+                var appSettings = await AppSettings.CreateAsync();
+                processAudioUrl = appSettings.ProcessAudioURL();
+                apiStatusUrl = appSettings.ApiStatusURL();
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to initialize AppSettings: " + ex.Message);
+            }
+        }
         private void closeBtn_Click(object sender, EventArgs e)
         {
              Application.Exit();

@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Evalucall_Desktop
 {
@@ -19,12 +20,30 @@ namespace Evalucall_Desktop
         {
             InitializeComponent();
             InitializeLoginForm();
-            var appSettings = new AppSettings();
-            connectionString = appSettings.GetConnectionString();
-
+            //var appSettings = new AppSettings();
+            //connectionString = appSettings.GetConnectionString();
+            Task task = InitializeConfiguration();
             notificationManager = new NotificationManager(txtMessage);
-            dbManager = new DatabaseManager(connectionString);
+            //dbManager = new DatabaseManager(connectionString);
+            Console.WriteLine("Connection stringgggg" + connectionString);
         }
+
+        public async Task InitializeConfiguration()
+        {
+            try
+            {
+                var appSettings = await AppSettings.CreateAsync();
+                connectionString = appSettings.GetConnectionString();
+                dbManager = new DatabaseManager(connectionString);
+                // Use other methods as needed
+                Console.WriteLine("Connection String: " + connectionString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to initialize AppSettings: " + ex.Message);
+            }
+        }
+
 
         private void closeBtn_Click(object sender, EventArgs e)
         {

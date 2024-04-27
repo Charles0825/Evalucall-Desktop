@@ -18,6 +18,9 @@ namespace Evalucall_Desktop
         private Dictionary<string, string> resetTokens = new Dictionary<string, string>();
         private DatabaseManager dbManager;
         private string connectionString;
+        private string weburl;
+        private string emailcred;
+        private string passcred;
         private NotificationManager notificationManager;
         private AppSettings appSettings;
         public ForgotPasswordForm()
@@ -25,12 +28,31 @@ namespace Evalucall_Desktop
             InitializeComponent();
             InitializeLoginForm();
 
-            appSettings = new AppSettings();
-            connectionString = appSettings.GetConnectionString();
-
+            //appSettings = new AppSettings();
+            //connectionString = appSettings.GetConnectionString();
+            Task task = InitializeConfiguration();
             notificationManager = new NotificationManager(txtMessage);
-            dbManager = new DatabaseManager(connectionString);
+            //dbManager = new DatabaseManager(connectionString);
         }
+
+        public async Task InitializeConfiguration()
+        {
+            try
+            {
+                var appSettings = await AppSettings.CreateAsync();
+                connectionString = appSettings.GetConnectionString();
+                weburl = appSettings.ResetWebsiteURL();
+                emailcred = appSettings.GetEmailCred();
+                passcred = appSettings.GetPasswordCred();
+                dbManager = new DatabaseManager(connectionString);
+                Console.WriteLine("Connection String: " + connectionString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to initialize AppSettings: " + ex.Message);
+            }
+        }
+
 
         private void backBtn_Click(object sender, EventArgs e)
         {
@@ -142,7 +164,7 @@ private void emailmeBtn_Click(object sender, EventArgs e)
             <div class='content'>
                 <h2 style='color: #FFA500;'>Dear user,</h2>
                 <p>Click the link below to reset your password:</p>
-                <p><a href=" + appSettings.ResetWebsiteURL() + resetToken + @"' style='background-color: #FFA500; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px;'>Reset Password</a></p>
+                <p><a href=" + weburl + resetToken + @"' style='background-color: #FFA500; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px;'>Reset Password</a></p>
                 <p>If you didn't request this, please ignore this email.</p>
             </div>
         </div>
@@ -152,7 +174,7 @@ private void emailmeBtn_Click(object sender, EventArgs e)
 
                 using (System.Net.Mail.MailMessage mail = new System.Net.Mail.MailMessage())
                 {
-                    mail.From = new System.Net.Mail.MailAddress(appSettings.GetEmailCred(), "no-reply@evalucall.com");
+                    mail.From = new System.Net.Mail.MailAddress(emailcred, "no-reply@evalucall.com");
                     mail.To.Add(email);
                     mail.Subject = subject;
                     mail.Body = body;
@@ -161,7 +183,7 @@ private void emailmeBtn_Click(object sender, EventArgs e)
                     using (System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient("smtp.gmail.com"))
                     {
                         smtp.Port = 587;
-                        smtp.Credentials = new System.Net.NetworkCredential(appSettings.GetEmailCred(), appSettings.GetPasswordCred());
+                        smtp.Credentials = new System.Net.NetworkCredential(emailcred, passcred);
                         smtp.EnableSsl = true;
 
                         smtp.Send(mail); // This line might throw exceptions
