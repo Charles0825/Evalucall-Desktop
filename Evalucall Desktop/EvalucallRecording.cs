@@ -192,7 +192,7 @@ namespace Evalucall_Desktop
                     content.Add(new StringContent(name), "name");
                     content.Add(new StringContent(email), "email");
                     content.Add(new StringContent(duration.ToString()), "duration");
-                    content.Add(new StringContent(dateTime.ToString()), "datetime");
+                    content.Add(new StringContent(dateTime.ToString("yyyy-MM-dd HH:mm:ss")), "datetime");
 
                     HttpResponseMessage response = await client.PostAsync(processAudioUrl, content);
 
